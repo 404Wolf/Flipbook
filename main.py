@@ -94,21 +94,18 @@ def merge_pdfs(pdf_paths, output_path):
 
 def format_seconds_to_timestamp(seconds):
     """
-    Format seconds to a timestamp.
+    Format seconds to a timestamp in format mm:ss:ms.
 
     Args:
         seconds (int): The number of seconds.
     Returns:
-        str: The formatted timestamp in the format hh:mm:ss:ms.
+        str: The formatted timestamp in the format mm:ss:ms.
     """
-
-    hours_place = int(seconds // (60 * 60))
-    seconds %= 60 * 60
-    minutes_place = int(seconds // 60)
-    seconds %= 60
-    milliseconds = int((seconds % 1) * 100)
-    seconds = int(seconds)
-    return f"{hours_place:02d}:{minutes_place:02d}:{seconds:02d}:{milliseconds:02d}"
+    
+    minutes_place = int(seconds / 60)
+    seconds_place = int(seconds)
+    milliseconds_place = int((seconds - seconds_place) * 100)
+    return f"{minutes_place:02d}:{seconds_place:02d}:{milliseconds_place:02d}"
 
 def create_temporary_directory():
     """
@@ -161,7 +158,7 @@ def main():
         }
         for frame in frame_images:
             # Render the frame as a page.
-            logging.info(f"Rendering frame {page_number} of {len(frame_images)}")
+            logging.info(f"Rendering frame {page_number} of {len(frame_images)*2}")
             render_page(
                 args.page_template,
                 root=os.getcwd(),
@@ -173,25 +170,27 @@ def main():
             page_number += 1
 
             # For every page add a blank page
-            logging.info(f"Rendering frame {page_number} of {len(frame_images)} (blank page)")
+            logging.info(f"Rendering frame {page_number} of {len(frame_images)*2} (blank page)")
             render_page(
                 args.blank_template,
                 root=os.getcwd(),
                 output_path=f"tmp/pdfs/page_{page_number}.pdf",
-                imageSrc=f"//tmp/images/{frame}",
                 timestamp=format_seconds_to_timestamp(current_timestamp),
                 **dimensions,
             )
-        # Update the timestamp for the next frame.
-        current_timestamp += duration_per_frame
+            page_number += 1
+            
+            # Update the timestamp for the next frame.
+            current_timestamp += duration_per_frame
 
-    # Merge the PDFs into a single PDF.
+        # Merge the PDFs into a single PDF.
         pdfs = [f"tmp/pdfs/{pdf}" for pdf in os.listdir("tmp/pdfs")]
         pdfs.sort(key=lambda x: int(x.split("_")[1].split(".")[0]))
         merge_pdfs(pdfs, args.output)
         logging.info("Finished.")
     finally:
         cleanup_temporary_directory(temporary_directory)
+        pass
 
 if __name__ == "__main__":
     main()

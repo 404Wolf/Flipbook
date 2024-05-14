@@ -11,6 +11,6 @@
 )
 
 #let timestamp = [
-  #text(sys.inputs.timestamp, fill: color.white, font: "0xProto Nerd Font", size: 0.1in)
+  #text(sys.inputs.timestamp, fill: color.white, font: "0xProto Nerd Font", size: 0.07in)
 ]
 #place(bottom + right, pad(0.025in, timestamp))
