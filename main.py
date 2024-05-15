@@ -11,8 +11,9 @@ from utils.misc import (
 from utils.ffpmeg import break_into_frames, get_video_duration
 from utils.pdfs import merge_pdfs
 from utils.typst import render_page
-from utils.stability import upscale_images_in_folder, upscale_image, StabilityAIEngines
-import asyncio
+from utils.tensor import upscale_images_in_folder
+
+logging.basicConfig(level=logging.INFO)
 
 load_dotenv()
 
@@ -23,6 +24,11 @@ parser.add_argument(
 )
 parser.add_argument(
     "width", help="The width of the image in the PDF in inches.", type=float
+)
+parser.add_argument(
+    "--no-upscale",
+    help="Whether to upscale the images using the Stability AI API.",
+    action="store_true",
 )
 parser.add_argument(
     "--margin",
@@ -57,10 +63,10 @@ parser.add_argument(
     default="tmp",
     type=str,
 )
+
 args = parser.parse_args()
-
-logging.basicConfig(level=logging.INFO)
-
+args.upscale = not args.no_upscale
+logging.debug(args)
 
 def main():
     temporary_directory = Path(args.temporary_directory)
@@ -77,16 +83,11 @@ def main():
         frame_images = os.listdir(temporary_directory / "images")
         frame_images.sort(key=lambda x: int(x.split("_")[1].split(".")[0]))
 
-        # # Upscale the images in the folder
-        # asyncio.run(
-        #     upscale_images_in_folder(
-        #         args.stability_api_key,
-        #         args.engine_id,
-        #         temporary_directory / "images",
-        #         temporary_directory / "upscaled_images",
-        #         args.width,
-        #     )
-        # )
+        # Upscale the images in the folder
+        image_folder_name = "images"
+        if args.upscale:
+            upscale_images_in_folder(temporary_directory / "images", temporary_directory / "upscaled_images")
+            image_folder_name = "upscaled_images"
 
         duration_per_frame = get_video_duration(args.video) / len(frame_images)
 
@@ -118,7 +119,7 @@ def main():
                 args.page_template,
                 root=os.getcwd(),
                 output_path=f"tmp/pdfs/page_{page_number}.pdf",
-                imageSrc=f"//tmp/images/{frame}",
+                imageSrc=f"//tmp/{image_folder_name}/{frame}",
                 timestamp=format_seconds_to_timestamp(current_timestamp),
                 **dimensions,
             )
@@ -138,12 +139,4 @@ def main():
 
 
 if __name__ == "__main__":
-    # main()
-    asyncio.run(
-        upscale_image(
-            os.getenv("STABILITY_API_KEY"),
-            StabilityAIEngines.X2,
-            "tmp/images/frame_0001.png",
-            "output.png",
-        )
-    )
+    main()

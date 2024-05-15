@@ -13,7 +13,7 @@ def break_into_frames(video_source, frames_per_second, output_directory):
         output_directory (str): The directory to save the frames.
     """
 
-    command = f"ffmpeg -i {video_source} -vf fps={frames_per_second} -vf scale=1200:-1 {output_directory}/frame_%04d.png"
+    command = f"ffmpeg -i {video_source} -vf fps={frames_per_second} {output_directory}/frame_%04d.png"
     logger.info(f"Running command: {command}")
     return os.system(command)
 

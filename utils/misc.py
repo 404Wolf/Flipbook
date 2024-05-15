@@ -28,6 +28,7 @@ def create_temporary_directory():
     temporary_directory = Path("tmp")
     temporary_directory.mkdir()
     (temporary_directory / "images").mkdir()
+    (temporary_directory / "upscaled_images").mkdir()
     (temporary_directory / "pdfs").mkdir()
     return temporary_directory
 

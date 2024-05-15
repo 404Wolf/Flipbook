@@ -2,3 +2,5 @@ PyPDF2
 aiohttp
 python-dotenv
 aiofiles
+tensorflow
+tensorflow_hub

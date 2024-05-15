@@ -113,5 +113,4 @@ async def upscale_images_in_folder(
             tasks.append(task)
             logger.info(f"Upscaling image: {input_path}")
 
-    await asyncio.gather(*tasks)
-    return os.listdir(output_folder)
+    return(await asyncio.gather(*tasks))
